@@ -1,3 +1,6 @@
 https://towardsdatascience.com/how-to-teach-an-ai-to-play-games-deep-reinforcement-learning-28f9b920440a
 
 https://github.com/maurock/snake-ga
+
+Un tutoriel très utile: 
+https://simoninithomas.github.io/Deep_reinforcement_learning_Course/#syllabus
