@@ -34,16 +34,16 @@ def predict_action(model, parameters, decay_step, state, actions):
         # Estimate the Qs values state
         """ Qs = sess.run(DQNetwork.output, feed_dict={
                       DQNetwork.inputs_: state.reshape((1, *state.shape))}) """
-        Qs = model(state.reshape((1, 4, 110, 84)))
+        Qs = model(state.view((1, 4, 110, 84)))
 
         # Take the biggest Q value (= the best action)
-        choice = np.argmax(Qs)
+        choice = np.argmax(Qs.detach().cpu().numpy())
         action = actions[choice]
 
     return action, explore_probability
 
 
-def train(model, env, parameters, image_processor, actions, optimizer):
+def train(model, env, parameters, image_processor, actions, optimizer, device):
 
     # Initialize the decay rate (that will use to reduce epsilon)
     decay_step = 0
@@ -62,6 +62,7 @@ def train(model, env, parameters, image_processor, actions, optimizer):
 
         # Remember that stack frame function also call our preprocess function.
         state = image_processor.stack_frame(state, True)
+        state = torch.Tensor(state).to(device)
 
         while step < parameters.max_steps:
             print('EPISODE:', episode, '/', parameters.total_episodes,
@@ -78,6 +79,7 @@ def train(model, env, parameters, image_processor, actions, optimizer):
 
             # Perform the action and get the next_state, reward, and done information
             next_state, reward, done, _ = env.step(action)
+            next_state = torch.Tensor(next_state).to(device)
 
             if parameters.episode_render:
                 env.render()
@@ -88,10 +90,10 @@ def train(model, env, parameters, image_processor, actions, optimizer):
             # If the game is finished
             if done:
                 # The episode ends so no next state
-                next_state = np.zeros((110, 84), dtype=np.int)
-
                 next_state = image_processor.stack_frame(
-                    next_state, False)
+                    np.zeros((110, 84), dtype=np.int), False)
+
+                next_state = torch.Tensor(next_state).to(device)
 
                 # Set step = max_steps to end the episode
                 step = parameters.max_steps
@@ -109,34 +111,39 @@ def train(model, env, parameters, image_processor, actions, optimizer):
 
                 # Store transition <st,at,rt+1,st+1> in memory D
                 image_processor.memory.add(
-                    (state, action, reward, next_state, done))
+                    (state.cpu().numpy(), action, reward, next_state.cpu().numpy(), done))
 
             else:
                 # Stack the frame of the next_state
                 next_state = image_processor.stack_frame(
-                    next_state, False)
+                    next_state.cpu().numpy(), False)
 
                 # Add experience to memory
                 image_processor.memory.add(
-                    (state, action, reward, next_state, done))
+                    (state.cpu().numpy(), action, reward, next_state, done))
 
                 # st+1 is now our current state
                 state = next_state
+                state = torch.Tensor(state).to(device)
 
             # LEARNING PART
             # Obtain random mini-batch from memory
             batch = image_processor.memory.sample(parameters.batch_size)
+
             states_mb = np.array([each[0] for each in batch], ndmin=3)
             actions_mb = np.array([each[1] for each in batch])
             rewards_mb = np.array([each[2] for each in batch])
+
             next_states_mb = np.array(
                 [each[3] for each in batch], ndmin=3)
+            next_states_mb = torch.Tensor(next_states_mb).to(device)
+
             dones_mb = np.array([each[4] for each in batch])
 
             target_Qs_batch = []
 
             # Get Q values for next_state
-            Qs_next_state = model(next_states_mb.reshape(
+            Qs_next_state = model(next_states_mb.view(
                 (64, 4, 110, 84)))  # TODO Check its correct !
 
             # Set Q_target = r if the episode ends at s+1, otherwise set Q_target = r + gamma*maxQ(s', a')
@@ -145,20 +152,22 @@ def train(model, env, parameters, image_processor, actions, optimizer):
 
                 # If we are in a terminal state, only equals reward
                 if terminal:
-                    target_Qs_batch.append(rewards_mb[i])
+                    target_Qs_batch.append(
+                        torch.Tensor([rewards_mb[i]]).to(device))
 
                 else:
                     target = rewards_mb[i] + \
                         parameters.gamma * (Qs_next_state[i]).max()
                     target_Qs_batch.append(target)
 
-            targets_mb = np.array([each.detach().numpy()
-                                   for each in target_Qs_batch])
+            targets_mb = torch.Tensor(
+                [each for each in target_Qs_batch]).to(device)
+            actions_mb = torch.Tensor(actions_mb).to(device)
+            states_mb = torch.Tensor(states_mb).to(device)
 
-            Qs = model(states_mb.reshape((64, 4, 110, 84)))
+            optimizer.zero_grad()
 
-            actions_mb = torch.Tensor(actions_mb)
-            targets_mb = torch.from_numpy(targets_mb)
+            Qs = model(states_mb.view((64, 4, 110, 84)))
 
             # Q is our predicted Q value.
             Q = (Qs * actions_mb).sum()
@@ -167,7 +176,6 @@ def train(model, env, parameters, image_processor, actions, optimizer):
             # Sum(Qtarget - Q)^2
             loss = (torch.mul(targets_mb - Q, targets_mb - Q)).mean()
 
-            optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
