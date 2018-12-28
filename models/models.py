@@ -46,8 +46,7 @@ class SimpleDQNet(nn.Module):
             out_features=self.nb_actions
         )
 
-    def forward(self, state):
-        x = torch.Tensor(state)
+    def forward(self, x):
         x = F.relu(self.conv1(x))
         x = F.relu(self.conv2(x))
         x = F.relu(self.conv3(x))
