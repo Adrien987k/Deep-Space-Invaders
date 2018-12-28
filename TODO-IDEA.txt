@@ -1,6 +1,27 @@
-https://towardsdatascience.com/how-to-teach-an-ai-to-play-games-deep-reinforcement-learning-28f9b920440a
+﻿
+- Compare SGD/Adam (SGD should be better for testing)
+- Keep track of memory usage
+- Save videos of train and test
+- Save curves
+- Save model during training
+- Implements Deep Q learning+ (Step 3+)
+- Lauch code with parameters (Scripts)
+- Try new architectures
 
-https://github.com/maurock/snake-ga
 
-Un tutoriel très utile: 
+References :
+
+Tutorial link:
 https://simoninithomas.github.io/Deep_reinforcement_learning_Course/#syllabus
+
+Reference paper:
+chrome-extension://oemmndcbldboiebfnladdacbdfmadadm/https://nihit.github.io/resources/spaceinvaders.pdf
+
+Another DQN implementation:
+https://github.com/tambetm/simple_dqn
+
+More advanced tuto on RL:
+https://www.youtube.com/channel/UCP7jMXSY2xbc3KCAE0MHQ-A/videos
+
+About Bellman equations :
+https://joshgreaves.com/reinforcement-learning/understanding-rl-the-bellman-equations/
