@@ -11,8 +11,8 @@ class Parameters():
         self.learning_rate = 0.00025      # Alpha (aka learning rate)
 
         # TRAINING HYPERPARAMETERS
-        self.total_episodes = 50            # Total episodes for training
-        self.max_steps = 50000              # Max possible steps in an episode
+        self.total_episodes = 10            # Total episodes for training
+        self.max_steps = 1000              # Max possible steps in an episode
         self.batch_size = 64                # Batch size
 
         # Exploration parameters for epsilon greedy strategy
@@ -35,4 +35,4 @@ class Parameters():
         self.training = False
 
         # TURN THIS TO TRUE IF YOU WANT TO RENDER THE ENVIRONMENT
-        self.episode_render = False
+        self.episode_render = True
