@@ -34,7 +34,7 @@ def predict_action(model, parameters, decay_step, state, actions):
         # Estimate the Qs values state
         """ Qs = sess.run(DQNetwork.output, feed_dict={
                       DQNetwork.inputs_: state.reshape((1, *state.shape))}) """
-        Qs = model(state)
+        Qs = model(state.reshape((1, 4, 110, 84)))
 
         # Take the biggest Q value (= the best action)
         choice = np.argmax(Qs)
@@ -47,6 +47,8 @@ def train(model, env, parameters, image_processor, actions, optimizer):
 
     # Initialize the decay rate (that will use to reduce epsilon)
     decay_step = 0
+
+    loss = 0
 
     for episode in range(parameters.total_episodes):
         # Set step to 0
@@ -62,6 +64,9 @@ def train(model, env, parameters, image_processor, actions, optimizer):
         state = image_processor.stack_frame(state, True)
 
         while step < parameters.max_steps:
+            print('EPISODE:', episode, '/', parameters.total_episodes,
+                  ' | STEP:', str(step), '/', str(parameters.max_steps), ' | LOSS:', loss)
+
             step += 1
 
             # Increase decay_step
@@ -131,7 +136,8 @@ def train(model, env, parameters, image_processor, actions, optimizer):
             target_Qs_batch = []
 
             # Get Q values for next_state
-            Qs_next_state = model(next_states_mb)
+            Qs_next_state = model(next_states_mb.reshape(
+                (64, 4, 110, 84)))  # TODO Check its correct !
 
             # Set Q_target = r if the episode ends at s+1, otherwise set Q_target = r + gamma*maxQ(s', a')
             for i in range(0, len(batch)):
@@ -143,12 +149,16 @@ def train(model, env, parameters, image_processor, actions, optimizer):
 
                 else:
                     target = rewards_mb[i] + \
-                        parameters.gamma * np.max(Qs_next_state[i])
+                        parameters.gamma * (Qs_next_state[i]).max()
                     target_Qs_batch.append(target)
 
-            targets_mb = np.array([each for each in target_Qs_batch])
+            targets_mb = np.array([each.detach().numpy()
+                                   for each in target_Qs_batch])
 
-            Qs = model(states_mb)
+            Qs = model(states_mb.reshape((64, 4, 110, 84)))
+
+            actions_mb = torch.Tensor(actions_mb)
+            targets_mb = torch.from_numpy(targets_mb)
 
             # Q is our predicted Q value.
             Q = (Qs * actions_mb).sum()
