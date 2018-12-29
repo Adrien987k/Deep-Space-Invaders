@@ -6,20 +6,21 @@ Installing the environment
 
 Windows :
 ~~~~bash
-pip install gym
-pip install --no-index -f https://github.com/Kojoley/atari-py/releases atari_py
-pip install gym-retro
+pip3 install gym
+pip3 install --no-index -f https://github.com/Kojoley/atari-py/releases atari_py
+pip3 install gym-retro
 ~~~~
 
+(may requires certain access rights)
 Linux :
 ~~~~bash
-pip install gym
-pip install -e '.[atari]'
-pip install gym-retro
+pip3 install gym
+pip3 install -e 'gym[atari]'
+pip3 install gym-retro
 ~~~~
 
 Then go in the folder 'Roms' and :
 ~~~~bash
-python -m retro.import .
+python3 -m retro.import .
 ~~~~
 

@@ -83,7 +83,7 @@ class ImageProcessor:
         # Greyscale the frame
         gray_frame = rgb2gray(frame)
 
-        # Crop the screen (remove the part below the player)
+        #Crop the screen (remove the part below the player)
         # [Up: Down, Left: right]
         cropped_frame = gray_frame[8:-12, 4:-12]
 

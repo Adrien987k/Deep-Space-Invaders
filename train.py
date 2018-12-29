@@ -60,7 +60,10 @@ def train(model, env, parameters, image_processor, actions, optimizer, device):
         # Make a new episode and observe the first state
         state = env.reset()
 
+        Test = np.copy(state)
+
         # Remember that stack frame function also call our preprocess function.
+
         state = image_processor.stack_frame(state, True)
         state = torch.Tensor(state).to(device)
 
@@ -77,9 +80,10 @@ def train(model, env, parameters, image_processor, actions, optimizer, device):
             action, explore_probability = predict_action(
                 model, parameters, decay_step, state, actions)
 
+
+
             # Perform the action and get the next_state, reward, and done information
             next_state, reward, done, _ = env.step(action)
-            next_state = torch.Tensor(next_state).to(device)
 
             if parameters.episode_render:
                 env.render()
@@ -90,8 +94,10 @@ def train(model, env, parameters, image_processor, actions, optimizer, device):
             # If the game is finished
             if done:
                 # The episode ends so no next state
+
                 next_state = image_processor.stack_frame(
                     np.zeros((110, 84), dtype=np.int), False)
+
 
                 next_state = torch.Tensor(next_state).to(device)
 
@@ -115,8 +121,9 @@ def train(model, env, parameters, image_processor, actions, optimizer, device):
 
             else:
                 # Stack the frame of the next_state
+
                 next_state = image_processor.stack_frame(
-                    next_state.cpu().numpy(), False)
+                    next_state, False)
 
                 # Add experience to memory
                 image_processor.memory.add(
@@ -126,6 +133,7 @@ def train(model, env, parameters, image_processor, actions, optimizer, device):
                 state = next_state
                 state = torch.Tensor(state).to(device)
 
+
             # LEARNING PART
             # Obtain random mini-batch from memory
             batch = image_processor.memory.sample(parameters.batch_size)
@@ -134,9 +142,11 @@ def train(model, env, parameters, image_processor, actions, optimizer, device):
             actions_mb = np.array([each[1] for each in batch])
             rewards_mb = np.array([each[2] for each in batch])
 
+
             next_states_mb = np.array(
                 [each[3] for each in batch], ndmin=3)
             next_states_mb = torch.Tensor(next_states_mb).to(device)
+
 
             dones_mb = np.array([each[4] for each in batch])
 
@@ -157,7 +167,7 @@ def train(model, env, parameters, image_processor, actions, optimizer, device):
 
                 else:
                     target = rewards_mb[i] + \
-                        parameters.gamma * (Qs_next_state[i]).max()
+                        parameters.gamma * (Qs_next_state[i]).detach().numpy().max()
                     target_Qs_batch.append(target)
 
             targets_mb = torch.Tensor(
