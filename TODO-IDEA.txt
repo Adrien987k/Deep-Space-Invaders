@@ -5,6 +5,11 @@
 - Save curves
 - Save model during training
 - Implements Deep Q learning+ (Step 3+)
+    - Fixed Q-target. -> Lostindark
+    - double DQN.
+    - dueling DQN.
+    - PER.
+
 - Lauch code with parameters (Scripts)
 - Try new architectures
 
