@@ -31,6 +31,10 @@ class Parameters():
         # PREPROCESSING HYPERPARAMETERS
         self.stack_size = 4                 # Number of frames stacked
 
+        # Fixed Q-target : update the parameter of our target_network every tau
+
+        self.tau = 10
+
         # MODIFY THIS TO FALSE IF YOU JUST WANT TO SEE THE TRAINED AGENT
         self.training = False
 

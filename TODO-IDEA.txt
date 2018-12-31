@@ -5,7 +5,7 @@
 - Save curves
 - Save model during training
 - Implements Deep Q learning+ (Step 3+)
-    - Fixed Q-target. -> Lostindark
+    - Fixed Q-target. -> Done. (Lostindark); Question : How to find 'optimal' tau ?
     - double DQN.
     - dueling DQN.
     - PER.

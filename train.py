@@ -43,7 +43,13 @@ def predict_action(model, parameters, decay_step, state, actions):
     return action, explore_probability
 
 
-def train(model, env, parameters, image_processor, actions, optimizer, device):
+##
+## Is target_net a reference ? (Hopefully ...)
+##
+def update_target_graph(model, target_net):
+    target_net.load_state_dict(model.state_dict())
+
+def train(model, target_net, env, parameters, image_processor, actions, optimizer, device):
 
     # Initialize the decay rate (that will use to reduce epsilon)
     decay_step = 0
@@ -60,10 +66,10 @@ def train(model, env, parameters, image_processor, actions, optimizer, device):
         # Make a new episode and observe the first state
         state = env.reset()
 
-        Test = np.copy(state)
+        # The number of steps done, to know when to update the target.
+        tau = 0
 
         # Remember that stack frame function also call our preprocess function.
-
         state = image_processor.stack_frame(state, True)
         state = torch.Tensor(state).to(device)
 
@@ -76,11 +82,12 @@ def train(model, env, parameters, image_processor, actions, optimizer, device):
             # Increase decay_step
             decay_step += 1
 
+            #
+            tau +=1
+
             # Predict the action to take and take it
             action, explore_probability = predict_action(
                 model, parameters, decay_step, state, actions)
-
-
 
             # Perform the action and get the next_state, reward, and done information
             next_state, reward, done, _ = env.step(action)
@@ -153,8 +160,12 @@ def train(model, env, parameters, image_processor, actions, optimizer, device):
             target_Qs_batch = []
 
             # Get Q values for next_state
-            Qs_next_state = model(next_states_mb.view(
-                (64, 4, 110, 84)))  # TODO Check its correct !
+            #Qs_next_state = model(next_states_mb.view(
+                #(64, 4, 110, 84)))  # TODO Check its correct !
+
+            # We use the fixed target (Q-fixed target) and try to get to it.
+            Qs_target_next_state = target_net(next_states_mb.view(
+                (64, 4, 110, 84)))
 
             # Set Q_target = r if the episode ends at s+1, otherwise set Q_target = r + gamma*maxQ(s', a')
             for i in range(0, len(batch)):
@@ -167,7 +178,7 @@ def train(model, env, parameters, image_processor, actions, optimizer, device):
 
                 else:
                     target = rewards_mb[i] + \
-                        parameters.gamma * (Qs_next_state[i]).detach().numpy().max()
+                        parameters.gamma * (Qs_target_next_state[i]).detach().numpy().max()
                     target_Qs_batch.append(target)
 
             targets_mb = torch.Tensor(
@@ -188,5 +199,9 @@ def train(model, env, parameters, image_processor, actions, optimizer, device):
 
             loss.backward()
             optimizer.step()
+
+            if tau > parameters.tau:
+                update_target = update_target_graph(model, target_net)
+                tau = 0
 
     return model
