@@ -68,6 +68,7 @@ def train(model, target_net, env, parameters, image_processor, actions, optimize
 
         # The number of steps done, to know when to update the target.
         tau = 0
+        update_target_graph(model, target_net)
 
         # Remember that stack frame function also call our preprocess function.
         state = image_processor.stack_frame(state, True)
@@ -160,8 +161,8 @@ def train(model, target_net, env, parameters, image_processor, actions, optimize
             target_Qs_batch = []
 
             # Get Q values for next_state
-            #Qs_next_state = model(next_states_mb.view(
-                #(64, 4, 110, 84)))  # TODO Check its correct !
+            Qs_next_state = model(next_states_mb.view(
+                (64, 4, 110, 84)))  # TODO Check its correct !
 
             # We use the fixed target (Q-fixed target) and try to get to it.
             Qs_target_next_state = target_net(next_states_mb.view(
@@ -171,6 +172,9 @@ def train(model, target_net, env, parameters, image_processor, actions, optimize
             for i in range(0, len(batch)):
                 terminal = dones_mb[i]
 
+                # We got a'
+                action = np.argmax(Qs_next_state.detach().numpy()[i])
+
                 # If we are in a terminal state, only equals reward
                 if terminal:
                     target_Qs_batch.append(
@@ -178,7 +182,7 @@ def train(model, target_net, env, parameters, image_processor, actions, optimize
 
                 else:
                     target = rewards_mb[i] + \
-                        parameters.gamma * (Qs_target_next_state[i]).detach().numpy().max()
+                        parameters.gamma * Qs_target_next_state[i].detach().numpy()[action]
                     target_Qs_batch.append(target)
 
             targets_mb = torch.Tensor(
