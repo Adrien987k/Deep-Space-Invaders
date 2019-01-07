@@ -18,11 +18,11 @@ image_processor = preprocess.ImageProcessor(env, actions, parameters)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-dq_net = models.SimpleDQNet(parameters.stack_size, parameters.nb_actions)
+dq_net = models.DDDQNet(parameters.stack_size, parameters.nb_actions)
 dq_net = dq_net.to(device)
 
 #Fixed q-targets
-target_net = models.SimpleDQNet(parameters.stack_size, parameters.nb_actions)
+target_net = models.DDDQNet(parameters.stack_size, parameters.nb_actions)
 target_net = dq_net.to(device)
 
 optimizer = optim.Adam(dq_net.parameters(), lr=parameters.learning_rate)
