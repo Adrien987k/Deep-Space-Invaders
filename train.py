@@ -119,7 +119,7 @@ def train(model, target_net, env, parameters, image_processor, actions, optimize
                       'Total reward: {}'.format(total_reward),
                       'Explore P: {:.4f}'.format(
                     explore_probability),
-                    'Training Loss {:.4f}'.format(loss))
+                    'Training Loss {:.4f}'.format(loss[0]))
 
                 # rewards_list.append((episode, total_reward))
 
@@ -144,7 +144,7 @@ def train(model, target_net, env, parameters, image_processor, actions, optimize
 
             # LEARNING PART
             # Obtain random mini-batch from memory
-            batch = image_processor.memory.sample(parameters.batch_size)
+            tree_idx, batch, ISWeights_mb = image_processor.memory.sample(parameters.batch_size)
 
             states_mb = np.array([each[0] for each in batch], ndmin=3)
             actions_mb = np.array([each[1] for each in batch])
@@ -199,10 +199,17 @@ def train(model, target_net, env, parameters, image_processor, actions, optimize
 
             # The loss is the difference between our predicted Q_values and the Q_target
             # Sum(Qtarget - Q)^2
-            loss = (torch.mul(targets_mb - Q, targets_mb - Q)).mean()
+            # But the loss is modified because of PER
+
+            loss = (torch.mul(torch.tensor(ISWeights_mb).to(device), torch.mul(targets_mb - Q, targets_mb - Q))).mean()
+            #loss = (torch.mul(targets_mb - Q, targets_mb - Q)).mean()
 
             loss.backward()
             optimizer.step()
+
+            # Update priority
+            absolute_errors = np.abs(targets_mb.detach().numpy() - Q.detach().numpy())# for updating Sumtree
+            image_processor.memory.batch_update(tree_idx, absolute_errors)
 
             if tau > parameters.tau:
                 update_target = update_target_graph(model, target_net)

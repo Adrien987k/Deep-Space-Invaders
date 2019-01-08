@@ -8,7 +8,7 @@
     - Fixed Q-target. -> Done. (Lostindark); Question : How to find 'optimal' tau ?
     - double DQN. -> Done. (Lost)
     - dueling DQN. -> Done. (Lost)
-    - PER.
+    - PER. -> Done. (Lost); Question : Optimal a ?
 
 - Lauch code with parameters (Scripts)
 - Try new architectures
