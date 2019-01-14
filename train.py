@@ -76,7 +76,7 @@ def train(dq_net, target_net, env, parameters, image_processor, models_manager, 
         state = torch.Tensor(state).to(device)
 
         while step < parameters.max_steps:
-            print('EPISODE:', episode, '/', parameters.total_episodes,
+            print('EPISODE:', episode + 1, '/', parameters.total_episodes,
                   ' | STEP:', str(step), '/', str(parameters.max_steps), ' | LOSS:', loss)
 
             if step % 100 == 99:

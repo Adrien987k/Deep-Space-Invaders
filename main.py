@@ -28,4 +28,4 @@ optimizer = optim.Adam(dq_net.parameters(), lr=parameters.learning_rate)
 dq_net_trained, target_net_trained = train.train(
     dq_net, target_net, env, parameters, image_processor, models_manager, actions, optimizer, device)
 
-# test.test(dq_net_trained, env, actions, parameters, image_processor)
+test.test(dq_net_trained, env, actions, parameters, image_processor, device)

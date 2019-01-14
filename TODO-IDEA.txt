@@ -1,9 +1,16 @@
 ﻿
 - Compare SGD/Adam (SGD should be better for testing)
-- Keep track of memory usage
-- Save videos of train and test
-- Save curves
-- Save model during training
+
+- Statistics:
+    - Keep track of memory usage
+    - Save videos of train and test
+    - Save curves
+
+- Save/load
+    - Save model during training. -> Done (Adrien)
+
+- Run Q-learning OR Q-learning+ by just changing one boolean parameter
+
 - Implements Deep Q learning+ (Step 3+)
     - Fixed Q-target. -> Done. (Lostindark); Question : How to find 'optimal' tau ?
     - double DQN. -> Done. (Lost)
@@ -11,7 +18,9 @@
     - PER. -> Done. (Lost); Question : Optimal a ?
 
 - Lauch code with parameters (Scripts)
+
 - Try new architectures
+- Try other games
 
 
 References :
