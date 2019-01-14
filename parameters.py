@@ -39,3 +39,6 @@ class Parameters():
 
         # TURN THIS TO TRUE IF YOU WANT TO RENDER THE ENVIRONMENT
         self.episode_render = True
+
+        # GET SAVED MODEL (FALSE FOR STARTING WITH NEW FRESH MODELS)
+        self.get_saved_model = False
