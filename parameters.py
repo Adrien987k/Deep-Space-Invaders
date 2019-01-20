@@ -2,7 +2,7 @@
 
 class Parameters():
 
-    def __init__(self, env):
+    def __init__(self, env, args):
         # MODEL HYPERPARAMETERS
         # Our input is a stack of 4 frames hence 110x84x4 (Width, height, channels)
         self.state_size = [110, 84, 4]
@@ -34,11 +34,13 @@ class Parameters():
         # Fixed Q-target : update the parameter of our target_network every tau
         self.tau = 10
 
+        a, b, c = int(args[-3]), int(args[-2]), int(args[-1])
+
         # MODIFY THIS TO FALSE IF YOU JUST WANT TO SEE THE TRAINED AGENT
-        self.training = False
+        self.training = bool(a)
 
         # TURN THIS TO TRUE IF YOU WANT TO RENDER THE ENVIRONMENT
-        self.episode_render = True
+        self.episode_render = bool(b)
 
         # GET SAVED MODEL (FALSE FOR STARTING WITH NEW FRESH MODELS)
-        self.get_saved_model = False
+        self.get_saved_model = bool(c)
