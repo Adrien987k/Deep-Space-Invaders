@@ -31,3 +31,19 @@ class ModelsManager():
             target_net.eval()
 
         return dq_net, target_net
+
+    def save_DQN_model(self, dq_net, target_net):
+        torch.save(dq_net.state_dict(), self.simple_dqn_save_path)
+
+    def load_DQN_model(self, parameters, device = 'gpu'):
+
+        dq_net = nets.SimpleDQNet(
+            parameters.stack_size, parameters.nb_actions)
+
+        if parameters.get_saved_model:
+            dq_net.load_state_dict(torch.load(self.simple_dqn_save_path, map_location = device))
+            #target_net.load_state_dict(torch.load(self.ddqn_target_path, map_location = device))
+
+            dq_net.eval()
+
+        return dq_net, None
