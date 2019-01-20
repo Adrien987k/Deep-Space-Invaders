@@ -10,21 +10,23 @@ import parameters
 import train
 import test
 import models.models as models
+import models.models_manager as saver
 
 
 env, actions = environment.build_env()
 parameters = parameters.Parameters(env)
 image_processor = preprocess.ImageProcessor(env, actions, parameters)
+model_manager = saver.ModelsManager(collab)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-dq_net = models.SimpleDQNet(parameters.stack_size, parameters.nb_actions)
+dq_net = model_manager.load_DQN_model(parameters, device)
 dq_net = dq_net.to(device)
 
 optimizer = optim.Adam(dq_net.parameters(), lr=parameters.learning_rate)
 
 # NOT WORKING FOR NOW !!!
 dq_net_trained = train.train(
-    dq_net, env, parameters, image_processor, actions, optimizer, device)
+    dq_net, env, parameters, image_processor, model_manager, actions, optimizer, device)
 
-# test.test(dq_net_trained, env, actions, parameters, image_processor)
+test.test(dq_net_trained, env, actions, parameters, image_processor)

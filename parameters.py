@@ -10,8 +10,12 @@ class Parameters():
         self.nb_actions = env.action_space.n  # 8 possible actions
         self.learning_rate = 0.00025      # Alpha (aka learning rate)
 
+        # SAVE HYPERPARAMETERS
+
+        self.get_saved_model = False
+
         # TRAINING HYPERPARAMETERS
-        self.total_episodes = 50            # Total episodes for training
+        self.total_episodes = 10            # Total episodes for training
         self.max_steps = 50000              # Max possible steps in an episode
         self.batch_size = 64                # Batch size
 
