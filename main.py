@@ -15,12 +15,13 @@ import models.models_manager as saver
 
 ####
 # options
-fqt, dddqn, per = False, False, False
+collab, d = bool(int(sys.argv[-2])), bool(int(sys.argv[-1]))
+fqt, dddqn, per = d, d, d
 
 env, actions = environment.build_env()
 parameters = parameters.Parameters(env, sys.argv)
 image_processor = preprocess.ImageProcessor(env, actions, parameters, per)
-models_manager = saver.ModelsManager()
+models_manager = saver.ModelsManager(collab)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -40,6 +41,6 @@ target_net = dq_net.to(device)
 optimizer = optim.Adam(dq_net.parameters(), lr=parameters.learning_rate)
 
 dq_net_trained, target_net_trained = train.train(
-    dq_net, target_net, env, parameters, image_processor, models_manager, actions, optimizer, device, fqt, dddqn, per)
+    dq_net, target_net, env, parameters, image_processor, models_manager, actions, optimizer, device, fqt, dddqn, per, collab)
 
 test.test(dq_net_trained, env, actions, parameters, image_processor, device)

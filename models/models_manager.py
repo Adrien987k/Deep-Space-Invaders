@@ -5,11 +5,16 @@ import models.nets as nets
 
 class ModelsManager():
 
-    def __init__(self):
+    def __init__(self, collab):
 
-        self.ddqn_dq_path = 'models/saves/ddqn_dq'
-        self.ddqn_target_path = 'models/saves/ddqn_target'
-        self.simple_dqn_save_path = 'models/saves/simple'
+        path = "models/saves/"
+
+        if collab:
+            path = "/content/drive/My Drive/Deep-Space-Invaders/" + path
+
+        self.ddqn_dq_path = path + 'ddqn_dq'
+        self.ddqn_target_path = path + 'ddqn_target'
+        self.simple_dqn_save_path = path + 'simple'
 
     def save_DDDQN_model(self, dq_net, target_net):
 
