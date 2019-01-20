@@ -27,6 +27,8 @@ def test(net, env, actions, parameters, image_processor, device):
             choice = np.argmax(Qs.detach().cpu().numpy())
             action = actions[choice]
 
+            print('Action =', action)
+
             # Perform the action and get the next_state, reward, and done information
             next_state, reward, done, _ = env.step(action)
             env.render()

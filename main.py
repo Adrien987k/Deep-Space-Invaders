@@ -14,7 +14,7 @@ import test
 import models.models_manager as saver
 
 ####
-#options
+# options
 fqt, dddqn, per = False, False, False
 
 env, actions = environment.build_env()
@@ -32,7 +32,7 @@ elif fqt:
     qd_net, target_net = models_manager.load_DQN_model(parameters, device)
 else:
     print("-----------------------------")
-    dq_net,_ = models_manager.load_DQN_model(parameters, device)
+    dq_net, _ = models_manager.load_DQN_model(parameters, device)
 
 dq_net = dq_net.to(device)
 target_net = dq_net.to(device)
