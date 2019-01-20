@@ -74,7 +74,7 @@ def train(model, env, parameters, image_processor, model_manager, actions, optim
             step += 1
 
             if step % 100 == 99:
-                    model_manager.save_DQN_model(dq_net)
+                    model_manager.save_DQN_model(model)
 
             # Increase decay_step
             decay_step += 1
@@ -122,7 +122,7 @@ def train(model, env, parameters, image_processor, model_manager, actions, optim
                 image_processor.memory.add(
                     (state.cpu().numpy(), action, reward, next_state.cpu().numpy(), done))
 
-                model_manager.save_DQN_model(dq_net)
+                model_manager.save_DQN_model(model)
 
             else:
                 # Stack the frame of the next_state
