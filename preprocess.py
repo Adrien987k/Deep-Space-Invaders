@@ -8,6 +8,7 @@ from collections import deque  # Ordered collection with ends
 from skimage import transform  # Help us to preprocess the frames
 from skimage.color import rgb2gray  # Help us to gray our frames
 
+
 class SumTree(object):
     """
     This SumTree code is modified version of Morvan Zhou:
@@ -23,12 +24,11 @@ class SumTree(object):
     def add(self, priority, data):
         tree_index = self.data_pointer + self.capacity - 1
         self.data[self.data_pointer] = data
-        self.update (tree_index, priority)
+        self.update(tree_index, priority)
         self.data_pointer += 1
 
         if self.data_pointer >= self.capacity:
             self.data_pointer = 0
-
 
     def update(self, tree_index, priority):
         change = priority - self.tree[tree_index]
@@ -78,7 +78,6 @@ class PERMemory(object):
 
     default_priority = 1.
 
-
     def __init__(self, max_size):
         self.tree = SumTree(max_size)
 
@@ -92,14 +91,17 @@ class PERMemory(object):
 
     def sample(self, batch_size):
         batch = []
-        b_idx, b_ISWeights = np.empty((batch_size,), dtype=np.int32), np.empty((batch_size, 1), dtype=np.float32)
+        b_idx, b_ISWeights = np.empty((batch_size,), dtype=np.int32), np.empty(
+            (batch_size, 1), dtype=np.float32)
 
         priority_segment = self.tree.total_priority / batch_size
 
-        self.PER_b = np.min([1., self.PER_b + self.PER_b_increment_per_sampling])  # max = 1
+        self.PER_b = np.min(
+            [1., self.PER_b + self.PER_b_increment_per_sampling])  # max = 1
 
-        #TODO check if my hack is correct (@Lost)
-        p_min = np.min([e for e in self.tree.tree[-self.tree.capacity:] if e > 0]) / self.tree.total_priority
+        # TODO check if my hack is correct (@Lost)
+        p_min = np.min([e for e in self.tree.tree[-self.tree.capacity:]
+                        if e > 0]) / self.tree.total_priority
         max_weight = (p_min * batch_size) ** (-self.PER_b)
 
         for i in range(batch_size):
@@ -111,15 +113,16 @@ class PERMemory(object):
 
             sampling_probabilities = priority / self.tree.total_priority
 
-            b_ISWeights[i, 0] = np.power(batch_size * sampling_probabilities, -self.PER_b)/ max_weight
+            b_ISWeights[i, 0] = np.power(
+                batch_size * sampling_probabilities, -self.PER_b) / max_weight
 
-            b_idx[i]= index
+            b_idx[i] = index
 
             experience = [data]
 
             batch.append(experience)
 
-        #batch = [e[0] for e in batch] #Eliminating a 1 in the dimension...
+        # batch = [e[0] for e in batch] #Eliminating a 1 in the dimension...
         return b_idx, np.squeeze(batch), b_ISWeights
 
     def batch_update(self, tree_idx, abs_errors):
@@ -170,8 +173,6 @@ class ImageProcessor:
             action = actions[choice]
             next_state, reward, done, _ = env.step(action)
 
-            # env.render() #TODO or not, why is it commented ? @Adri
-
             # Stack the frames
             next_state = self.stack_frame(next_state, False)
 
@@ -208,7 +209,7 @@ class ImageProcessor:
         # Greyscale the frame
         gray_frame = rgb2gray(frame)
 
-        #Crop the screen (remove the part below the player)
+        # Crop the screen (remove the part below the player)
         # [Up: Down, Left: right]
         cropped_frame = gray_frame[8:-12, 4:-12]
 

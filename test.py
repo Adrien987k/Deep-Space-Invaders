@@ -18,8 +18,8 @@ def test(net, env, actions, parameters, image_processor, device):
 
         while True:
             state = torch.Tensor(state).to(device)
-
             # Get action from Q-network
+
             # Estimate the Qs values state
             Qs = net(state.view(1, 4, 110, 84))
 
@@ -41,6 +41,8 @@ def test(net, env, actions, parameters, image_processor, device):
                 break
 
             next_state = image_processor.stack_frame(next_state, False)
+
+            # print(torch.eq(old_state, torch.Tensor(next_state).to(device)).sum())
 
             state = next_state
 

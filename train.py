@@ -35,6 +35,7 @@ def predict_action(model, parameters, decay_step, state, actions):
         """ Qs = sess.run(DQNetwork.output, feed_dict={
                       DQNetwork.inputs_: state.reshape((1, *state.shape))}) """
         Qs = model(state.view((1, 4, 110, 84)))
+        print(Qs)
 
         # Take the biggest Q value (= the best action)
         choice = np.argmax(Qs.detach().cpu().numpy())
@@ -76,15 +77,15 @@ def train(dq_net, target_net, env, parameters, image_processor, models_manager, 
         state = torch.Tensor(state).to(device)
 
         while step < parameters.max_steps:
-            print('EPISODE:', episode + 1, '/', parameters.total_episodes,
-                  ' | STEP:', str(step), '/', str(parameters.max_steps), ' | LOSS:', loss)
 
             if step % 100 == 99:
+                print('EPISODE:', episode + 1, '/', parameters.total_episodes,
+                      ' | STEP:', str(step), '/', str(parameters.max_steps), ' | LOSS:', loss)
+
                 if dddqn:
                     models_manager.save_DDDQN_model(dq_net, target_net)
                 else:
                     models_manager.save_DQN_model(dq_net, target_net)
-
 
             step += 1
 
@@ -205,7 +206,8 @@ def train(dq_net, target_net, env, parameters, image_processor, models_manager, 
                     else:
                         target = rewards_mb[i] + \
                             parameters.gamma * \
-                            Qs_target_next_state[i].detach().cpu().numpy()[action]
+                            Qs_target_next_state[i].detach().cpu().numpy()[
+                            action]
                         target_Qs_batch.append(target)
             else:
                 for i in range(0, len(batch)):
@@ -222,7 +224,6 @@ def train(dq_net, target_net, env, parameters, image_processor, models_manager, 
                             np.max(Qs_next_state[i].detach().cpu().numpy())
                         target_Qs_batch.append(target)
 
-
             targets_mb = torch.Tensor(
                 [each for each in target_Qs_batch]).to(device)
             actions_mb = torch.Tensor(actions_mb).to(device)
@@ -238,8 +239,8 @@ def train(dq_net, target_net, env, parameters, image_processor, models_manager, 
             # But the loss is modified because of PER
 
             if per:
-                loss = (torch.mul(torch.tensor(ISWeights_mb).to(device),
-                              torch.mul(targets_mb - Q, targets_mb - Q))).mean()
+                loss = (torch.mul(torch.Tensor(ISWeights_mb).to(device),
+                                  torch.mul(targets_mb - Q, targets_mb - Q))).mean()
             else:
                 loss = (torch.mul(targets_mb - Q, targets_mb - Q)).mean()
 

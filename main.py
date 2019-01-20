@@ -1,4 +1,5 @@
 
+import models.nets as nets
 import gym
 
 import sys
@@ -39,7 +40,8 @@ target_net = dq_net.to(device)
 
 optimizer = optim.Adam(dq_net.parameters(), lr=parameters.learning_rate)
 
-dq_net_trained, target_net_trained = train.train(
-    dq_net, target_net, env, parameters, image_processor, models_manager, actions, optimizer, device, fqt, dddqn, per)
+if parameters.training:
+    dq_net_trained, target_net_trained = train.train(
+        dq_net, target_net, env, parameters, image_processor, models_manager, actions, optimizer, device, fqt, dddqn, per)
 
-test.test(dq_net_trained, env, actions, parameters, image_processor, device)
+test.test(dq_net, env, actions, parameters, image_processor, device)
