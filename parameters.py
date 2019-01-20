@@ -12,7 +12,7 @@ class Parameters():
 
         # SAVE HYPERPARAMETERS
 
-        self.get_saved_model = False
+        self.get_saved_model = True
 
         # TRAINING HYPERPARAMETERS
         self.total_episodes = 10            # Total episodes for training
@@ -39,4 +39,4 @@ class Parameters():
         self.training = False
 
         # TURN THIS TO TRUE IF YOU WANT TO RENDER THE ENVIRONMENT
-        self.episode_render = True
+        self.episode_render = False
