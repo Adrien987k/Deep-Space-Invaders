@@ -51,7 +51,7 @@ def update_target_graph(model, target_net):
     target_net.load_state_dict(model.state_dict())
 
 
-def train(dq_net, target_net, env, parameters, image_processor, models_manager, actions, optimizer, device, fqt, dddqn, per):
+def train(dq_net, target_net, env, parameters, image_processor, models_manager, actions, optimizer, device, fqt, dddqn, per, collab):
 
     # Initialize the decay rate (that will use to reduce epsilon)
     decay_step = 0
@@ -77,6 +77,10 @@ def train(dq_net, target_net, env, parameters, image_processor, models_manager, 
         state = torch.Tensor(state).to(device)
 
         while step < parameters.max_steps:
+
+            if not collab or (collab and step % 100 == 0):
+                print('EPISODE:', episode + 1, '/', parameters.total_episodes,
+                      ' | STEP:', str(step), '/', str(parameters.max_steps), ' | LOSS:', loss)
 
             if step % 100 == 99:
                 print('EPISODE:', episode + 1, '/', parameters.total_episodes,
