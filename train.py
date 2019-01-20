@@ -43,7 +43,7 @@ def predict_action(model, parameters, decay_step, state, actions):
     return action, explore_probability
 
 
-def train(model, env, parameters, image_processor, actions, optimizer, device):
+def train(model, env, parameters, image_processor, model_manager, actions, optimizer, device):
 
     # Initialize the decay rate (that will use to reduce epsilon)
     decay_step = 0
@@ -72,6 +72,9 @@ def train(model, env, parameters, image_processor, actions, optimizer, device):
                   ' | STEP:', str(step), '/', str(parameters.max_steps), ' | LOSS:', loss)
 
             step += 1
+
+            if step % 100 == 99:
+                    model_manager.save_DQN_model(dq_net)
 
             # Increase decay_step
             decay_step += 1
@@ -118,6 +121,8 @@ def train(model, env, parameters, image_processor, actions, optimizer, device):
                 # Store transition <st,at,rt+1,st+1> in memory D
                 image_processor.memory.add(
                     (state.cpu().numpy(), action, reward, next_state.cpu().numpy(), done))
+
+                model_manager.save_DQN_model(dq_net)
 
             else:
                 # Stack the frame of the next_state
