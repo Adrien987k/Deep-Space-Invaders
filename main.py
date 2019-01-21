@@ -52,6 +52,9 @@ class StackProcessor(object):
         self.frame_stack = deque([np.zeros((110, 84), dtype=np.int)
                                   for i in range(self.stack_size)], maxlen=4)
 
+        self.screen_height = 110
+        self.screen_width = 84
+
     def init_stack(self, frame):
         self.frame_stack = deque([np.zeros((110, 84), dtype=np.int)
                                   for i in range(self.stack_size)], maxlen=4)
@@ -88,8 +91,7 @@ class StackProcessor(object):
 
         return torch.tensor(np.stack(self.frame_stack, axis=2))
 
-StackProcessor.screen_height = 110
-StackProcessor.screen_width = 84
+stack_proc = StackProcessor(4)
 
 class DQN(nn.Module):
 
@@ -186,16 +188,8 @@ N = len(actions)
 # returned from AI gym. Typical dimensions at this point are close to 3x40x90
 # which is the result of a clamped and down-scaled render buffer in get_screen()
 
-policy_net = DQN(4, N).double()
-target_net = DQN(4, N).double()
-target_net.load_state_dict(policy_net.state_dict())
-target_net.eval()
-
-optimizer = optim.RMSprop(policy_net.parameters())
-memory = ReplayMemory(10000)
 
 steps_done = 0
-
 def select_action(policy_net, state):
     global steps_done
     sample = random.random()
@@ -207,7 +201,7 @@ def select_action(policy_net, state):
             # t.max(1) will return largest value for column of each row.
             # second column on max result is index of where max element was
             # found, so we pick action with the larger expected reward.
-            return  policy_net(state.view((1, stack_proc.stack_size, StackProcessor.screen_height, StackProcessor.screen_width))).max(1)[1].view(1, 1)
+            return  policy_net(state.view((1, stack_proc.stack_size, stack_proc.screen_height, stack_proc.screen_width))).max(1)[1].view(1, 1)
 
     else:
         return torch.tensor([[random.randrange(N)]], device=device, dtype=torch.long)
@@ -242,7 +236,7 @@ def optimize_model(policy_net, memory):
     # columns of actions taken. These are the actions which would've been taken
     # for each batch state according to policy_net
 
-    state_action_values = policy_net(state_batch.view((BATCH_SIZE, stack_proc.stack_size, StackProcessor.screen_height, StackProcessor.screen_width)))
+    state_action_values = policy_net(state_batch.view((BATCH_SIZE, stack_proc.stack_size, stack_proc.screen_height, stack_proc.screen_width)))
     state_action_values = state_action_values.gather(1, action_batch)
 
 
@@ -257,7 +251,12 @@ def optimize_model(policy_net, memory):
     #TODOOOOOOOOOOOOOOOOO EST-CE QUE CA A DU SENS DE FAIRE CA ????
     # Je veut dire le view ?
     # Ou alors il fallait en fait mettre tout bien avant de faire les trucs chelous...
-    a =  target_net(non_final_next_states.view((BATCH_SIZE, stack_proc.stack_size, StackProcessor.screen_height, StackProcessor.screen_width)))
+
+    # TODO : Ca ne fonctionne pas, je fait un hack pour que ça passe mais il faut y reflechir avec Adrien....
+
+    sss = non_final_next_states.size()
+    sss = int(sss[0]/ stack_proc.screen_height)
+    a =  target_net(non_final_next_states.view((sss, stack_proc.stack_size, stack_proc.screen_height, stack_proc.screen_width)))
     b = a.max(1)[0].detach()
     next_state_values[non_final_mask] = b.type(torch.FloatTensor)
 
@@ -278,32 +277,68 @@ def optimize_model(policy_net, memory):
 
     return loss
 
+##########
+
+class ModelsManager():
+
+    def __init__(self):
+
+        path = "models/saves/"
+        self.simple_dqn_save_path = path + 'simple'
+
+    def save_DQN_model(self, dq_net):
+        torch.save(dq_net.state_dict(), self.simple_dqn_save_path)
+
+    def load_DQN_model(self, stack_size,nb_actions, get_saved, device = 'cpu'):
+
+        dq_net = DQN(stack_proc.stack_size, N).double()
+
+        if get_saved:
+            dq_net.load_state_dict(torch.load(self.simple_dqn_save_path, map_location = device))
+            dq_net.eval()
+
+        return dq_net
+
+manager = ModelsManager()
+
+policy_net = manager.load_DQN_model(stack_proc.stack_size, N, True)
+target_net = DQN(stack_proc.stack_size, N).double()
+target_net.load_state_dict(policy_net.state_dict())
+target_net.eval()
+
+optimizer = optim.RMSprop(policy_net.parameters())
+memory = ReplayMemory(10000)
+
 
 ##################### MAIN TRAINING LOOP
 #####################
 
+
 def one_hot(action_index):
     return torch.eye(N)[action_index.item()]
 
-num_episodes = 50
+num_episodes = 2
 for i_episode in range(num_episodes):
     # Initialize the environment and state
     frame = env.reset()
     stack_proc = StackProcessor(4)
     state = stack_proc.stack_frame(frame, True)
-    a = policy_net(state.view((1, stack_proc.stack_size, StackProcessor.screen_height, StackProcessor.screen_width)))
-
     loss = INF
 
     for t in count():
 
         print('Episode: {} |> {}'.format(i_episode, t),
-              'Training Loss {:.6f}'.format(loss))
+              'Training Loss {:.12f}'.format(loss))
+
+        if t % 200 == 0:
+            manager.save_DQN_model(policy_net)
 
         # Select and perform an action
         action = select_action(policy_net, state)
 
         next_state, reward, done, _ = env.step(one_hot(action))
+        #env.render()
+
         reward = torch.tensor([reward], device=device)
 
         if not done:
@@ -319,7 +354,7 @@ for i_episode in range(num_episodes):
 
         # Perform one step of the optimization (on the target network)
         loss = optimize_model(policy_net, memory)
-        env.render()
+
         if done:
             episode_durations.append(t + 1)
             break
@@ -327,5 +362,17 @@ for i_episode in range(num_episodes):
     if i_episode % TARGET_UPDATE == 0:
         target_net.load_state_dict(policy_net.state_dict())
 
+    manager.save_DQN_model(policy_net)
+
 print('Complete')
+
+import test
+
+# Initialize the environment and state
+
+stack_proc = StackProcessor(4)
+test.test(policy_net, actions, env, stack_proc)
+
+print('Goodbye')
+
 env.close()
