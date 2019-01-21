@@ -317,7 +317,7 @@ memory = ReplayMemory(10000)
 def one_hot(action_index):
     return torch.eye(N)[action_index.item()]
 
-num_episodes = 2
+num_episodes = 10
 for i_episode in range(num_episodes):
     # Initialize the environment and state
     frame = env.reset()
