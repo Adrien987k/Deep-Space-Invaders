@@ -74,7 +74,7 @@ def train(model, env, parameters, image_processor, model_manager, actions, optim
             step += 1
 
             if step % 100 == 99:
-                    model_manager.save_DQN_model(model)
+                model_manager.save_DQN_model(model)
 
             # Increase decay_step
             decay_step += 1
@@ -82,8 +82,6 @@ def train(model, env, parameters, image_processor, model_manager, actions, optim
             # Predict the action to take and take it
             action, explore_probability = predict_action(
                 model, parameters, decay_step, state, actions)
-
-
 
             # Perform the action and get the next_state, reward, and done information
             next_state, reward, done, _ = env.step(action)
@@ -100,7 +98,6 @@ def train(model, env, parameters, image_processor, model_manager, actions, optim
 
                 next_state = image_processor.stack_frame(
                     np.zeros((110, 84), dtype=np.int), False)
-
 
                 next_state = torch.Tensor(next_state).to(device)
 
@@ -138,7 +135,6 @@ def train(model, env, parameters, image_processor, model_manager, actions, optim
                 state = next_state
                 state = torch.Tensor(state).to(device)
 
-
             # LEARNING PART
             # Obtain random mini-batch from memory
             batch = image_processor.memory.sample(parameters.batch_size)
@@ -147,11 +143,9 @@ def train(model, env, parameters, image_processor, model_manager, actions, optim
             actions_mb = np.array([each[1] for each in batch])
             rewards_mb = np.array([each[2] for each in batch])
 
-
             next_states_mb = np.array(
                 [each[3] for each in batch], ndmin=3)
             next_states_mb = torch.Tensor(next_states_mb).to(device)
-
 
             dones_mb = np.array([each[4] for each in batch])
 
@@ -172,7 +166,8 @@ def train(model, env, parameters, image_processor, model_manager, actions, optim
 
                 else:
                     target = rewards_mb[i] + \
-                        parameters.gamma * (Qs_next_state[i]).detach().numpy().max()
+                        parameters.gamma * \
+                        (Qs_next_state[i]).detach().numpy().max()
                     target_Qs_batch.append(target)
 
             targets_mb = torch.Tensor(
