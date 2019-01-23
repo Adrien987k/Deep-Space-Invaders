@@ -37,6 +37,7 @@ class Statistics():
 
         plt.plot(np.array(self.episodes), np.array(values))
         plt.savefig(self.path + ylabel + str(self.episodes[-1]) + '.png')
+        plt.close()
 
     def save_plots(self):
 

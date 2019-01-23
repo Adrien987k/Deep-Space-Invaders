@@ -2,6 +2,7 @@
 import numpy as np
 import torch
 
+import random
 
 def test(net, env, actions, parameters, image_processor, device):
 
@@ -18,16 +19,23 @@ def test(net, env, actions, parameters, image_processor, device):
 
         while True:
             state = torch.Tensor(state).to(device)
-            # Get action from Q-network
+            # Get action from Q-network or explore with low probability
 
-            # Estimate the Qs values state
-            Qs = net(state.view(1, 4, 110, 84))
+            explore_probability = np.random.rand()
 
-            # Take the biggest Q value (= the best action)
-            choice = np.argmax(Qs.detach().cpu().numpy())
-            action = actions[choice]
+            if (explore_probability > 0.2):
+                # Make a random action (exploration)
+                choice = random.randint(1, len(actions)) - 1
+                action = actions[choice]
+            else:
+                # Estimate the Qs values state
+                Qs = net(state.view(1, 4, 110, 84))
 
-            print('Action =', action)
+                # Take the biggest Q value (= the best action)
+                choice = np.argmax(Qs.detach().cpu().numpy())
+                action = actions[choice]
+
+            # print('Action =', action)
 
             # Perform the action and get the next_state, reward, and done information
             next_state, reward, done, _ = env.step(action)
@@ -41,8 +49,6 @@ def test(net, env, actions, parameters, image_processor, device):
                 break
 
             next_state = image_processor.stack_frame(next_state, False)
-
-            # print(torch.eq(old_state, torch.Tensor(next_state).to(device)).sum())
 
             state = next_state
 
