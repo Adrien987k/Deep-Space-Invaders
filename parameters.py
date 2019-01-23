@@ -26,7 +26,7 @@ class Parameters():
         # MEMORY HYPERPARAMETERS
         # Number of experiences stored in the Memory when initialized for the first time
         self.pretrain_length = self.batch_size
-        self.memory_size = 1000000          # Number of experiences the Memory can keep
+        self.memory_size = 100000          # Number of experiences the Memory can keep
 
         # PREPROCESSING HYPERPARAMETERS
         self.stack_size = 4                 # Number of frames stacked
@@ -34,11 +34,7 @@ class Parameters():
         # Fixed Q-target : update the parameter of our target_network every tau
         self.tau = 10
 
-<<<<<<< HEAD
-        #a, b, c = int(args[-3]), int(args[-2]), int(args[-1])
-=======
         a, b, c = int(args[-5]), int(args[-4]), int(args[-3])
->>>>>>> db5be44a58b1ce68980c119d46b810d30ee02d50
 
         # MODIFY THIS TO FALSE IF YOU JUST WANT TO SEE THE TRAINED AGENT
         self.training = True  # bool(a)
