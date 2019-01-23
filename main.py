@@ -16,13 +16,12 @@ import models.models_manager as saver
 
 ####
 # options
-collab, d = bool(int(sys.argv[-2])), bool(int(sys.argv[-1]))
-fqt, dddqn, per = d, d, d
+fqt, dddqn, per = False, False, False
 
 env, actions = environment.build_env()
 parameters = parameters.Parameters(env, sys.argv)
 image_processor = preprocess.ImageProcessor(env, actions, parameters, per)
-models_manager = saver.ModelsManager(collab)
+models_manager = saver.ModelsManager(False)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

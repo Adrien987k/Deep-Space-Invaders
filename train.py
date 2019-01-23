@@ -3,6 +3,7 @@ import numpy as np
 import random
 
 import torch
+import statistics
 
 
 def predict_action(model, parameters, decay_step, state, actions):
@@ -35,7 +36,6 @@ def predict_action(model, parameters, decay_step, state, actions):
         """ Qs = sess.run(DQNetwork.output, feed_dict={
                       DQNetwork.inputs_: state.reshape((1, *state.shape))}) """
         Qs = model(state.view((1, 4, 110, 84)))
-        print(Qs)
 
         # Take the biggest Q value (= the best action)
         choice = np.argmax(Qs.detach().cpu().numpy())
@@ -51,7 +51,9 @@ def update_target_graph(model, target_net):
     target_net.load_state_dict(model.state_dict())
 
 
-def train(dq_net, target_net, env, parameters, image_processor, models_manager, actions, optimizer, device, fqt, dddqn, per, collab):
+def train(dq_net, target_net, env, parameters, image_processor, models_manager, actions, optimizer, device, fqt, dddqn, per, collab=False):
+
+    stats = statistics.Statistics()
 
     # Initialize the decay rate (that will use to reduce epsilon)
     decay_step = 0
@@ -77,11 +79,6 @@ def train(dq_net, target_net, env, parameters, image_processor, models_manager, 
         state = torch.Tensor(state).to(device)
 
         while step < parameters.max_steps:
-
-            if not collab or (collab and step % 100 == 0):
-                print('EPISODE:', episode + 1, '/', parameters.total_episodes,
-                      ' | STEP:', str(step), '/', str(parameters.max_steps), ' | LOSS:', loss)
-
             if step % 100 == 99:
                 print('EPISODE:', episode + 1, '/', parameters.total_episodes,
                       ' | STEP:', str(step), '/', str(parameters.max_steps), ' | LOSS:', loss)
@@ -132,6 +129,9 @@ def train(dq_net, target_net, env, parameters, image_processor, models_manager, 
                       'Explore P: {:.6f}'.format(
                     explore_probability),
                     'Training Loss {:.6f}'.format(loss))
+
+                stats.add_episode_stats(
+                    episode, total_reward, explore_probability, loss)
 
                 # rewards_list.append((episode, total_reward))
 
