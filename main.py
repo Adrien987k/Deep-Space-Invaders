@@ -131,7 +131,7 @@ class DQN(nn.Module):
 
         self.fc2 = nn.Linear(
             in_features=512,
-            out_features=self.nb_actions
+            out_features=(2**self.nb_actions)
         )
 
     def forward(self, x):
@@ -188,9 +188,8 @@ N = len(actions)
 # returned from AI gym. Typical dimensions at this point are close to 3x40x90
 # which is the result of a clamped and down-scaled render buffer in get_screen()
 
-
 steps_done = 0
-def select_action(policy_net, state):
+def select_action(policy_net, state, env):
     global steps_done
     sample = random.random()
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
@@ -201,10 +200,10 @@ def select_action(policy_net, state):
             # t.max(1) will return largest value for column of each row.
             # second column on max result is index of where max element was
             # found, so we pick action with the larger expected reward.
-            return  policy_net(state.view((1, stack_proc.stack_size, stack_proc.screen_height, stack_proc.screen_width))).max(1)[1].view(1, 1)
+            return policy_net(state.view((1, stack_proc.stack_size, stack_proc.screen_height, stack_proc.screen_width))).max(1)[1].view(1, 1)
 
     else:
-        return torch.tensor([[random.randrange(N)]], device=device, dtype=torch.long)
+        return torch.tensor([[np.random.randint(0, 2**N)]])
 
 episode_durations = []
 
@@ -313,14 +312,17 @@ memory = ReplayMemory(10000)
 ##################### MAIN TRAINING LOOP
 #####################
 
-
 def one_hot(action_index):
-    return torch.eye(N)[action_index.item()]
+    s = action_index.item()
+    b = bin(s)[2:]
+    a = torch.zeros([N])
+    for i in range(len(b)):
+        a[i] = int(b[i])
+    return a
 
 num_episodes = 0
 for i_episode in range(num_episodes):
     # Initialize the environment and state
-    print("olo")
     frame = env.reset()
     stack_proc = StackProcessor(4)
     state = stack_proc.stack_frame(frame, True)
@@ -335,8 +337,7 @@ for i_episode in range(num_episodes):
             manager.save_DQN_model(policy_net)
 
         # Select and perform an action
-        action = select_action(policy_net, state)
-
+        action = select_action(policy_net, state, env)
         next_state, reward, done, _ = env.step(one_hot(action))
         #env.render()
 
