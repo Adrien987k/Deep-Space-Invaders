@@ -26,7 +26,7 @@ class Parameters():
         # MEMORY HYPERPARAMETERS
         # Number of experiences stored in the Memory when initialized for the first time
         self.pretrain_length = self.batch_size
-        self.memory_size = 100000          # Number of experiences the Memory can keep
+        self.memory_size = 40000          # Number of experiences the Memory can keep
 
         # PREPROCESSING HYPERPARAMETERS
         self.stack_size = 4                 # Number of frames stacked

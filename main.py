@@ -14,6 +14,9 @@ import train
 import test
 import models.models_manager as saver
 
+import warnings
+warnings.filterwarnings('ignore')
+
 ####
 # options
 fqt, dddqn, per = False, False, False

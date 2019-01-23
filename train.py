@@ -124,14 +124,14 @@ def train(dq_net, target_net, env, parameters, image_processor, models_manager, 
                 # Get the total reward of the episode
                 total_reward = np.sum(episode_rewards)
 
-                print('Episode: {}'.format(episode),
+                print('Episode: {}'.format(episode + 1),
                       'Total reward: {}'.format(total_reward),
                       'Explore P: {:.6f}'.format(
                     explore_probability),
                     'Training Loss {:.6f}'.format(loss))
 
                 stats.add_episode_stats(
-                    episode, total_reward, explore_probability, loss)
+                    episode + 1, total_reward, explore_probability, loss)
 
                 # rewards_list.append((episode, total_reward))
 
