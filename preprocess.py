@@ -140,11 +140,8 @@ class Memory():
         self.max_size = max_size
 
     def add(self, experience):
-        print("MAX SIZE" + str(self.max_size))
         self.buffer.append(experience)
-        print("BUFFER" + str(len(self.buffer)))
         if len(self.buffer) > self.max_size:
-            print("pop left")
             self.buffer.popleft()
 
     def sample(self, batch_size):
