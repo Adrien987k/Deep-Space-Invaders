@@ -26,7 +26,7 @@ class Parameters():
         # MEMORY HYPERPARAMETERS
         # Number of experiences stored in the Memory when initialized for the first time
         self.pretrain_length = self.batch_size
-        self.memory_size = 40000          # Number of experiences the Memory can keep
+        self.memory_size = 300          # Number of experiences the Memory can keep
 
         # PREPROCESSING HYPERPARAMETERS
         self.stack_size = 4                 # Number of frames stacked
@@ -34,14 +34,18 @@ class Parameters():
         # Fixed Q-target : update the parameter of our target_network every tau
         self.tau = 10
 
-        # training, episode_render, get_saved_model = int(
-        #    args[-5]), int(args[-4]), int(args[-3])
+        training, episode_render, get_saved_model = bool(int(
+            args[-3])), bool(int(args[-2])), bool(int(args[-1]))
+
+        # training = True
+        # episode_render = False
+        # get_saved_model = False
 
         # MODIFY THIS TO FALSE IF YOU JUST WANT TO SEE THE TRAINED AGENT
-        self.training = True  # bool(training)
+        self.training = training
 
         # TURN THIS TO TRUE IF YOU WANT TO RENDER THE ENVIRONMENT
-        self.episode_render = False  # bool(episode_render)
+        self.episode_render = episode_render
 
         # GET SAVED MODEL (FALSE FOR STARTING WITH NEW FRESH MODELS)
-        self.get_saved_model = False  # bool(get_saved_model)
+        self.get_saved_model = get_saved_model

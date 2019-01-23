@@ -23,7 +23,7 @@ class Statistics():
         self.explore_probabilities.append(explore_probability)
         self.losses.append(loss)
 
-        if self.episodes[-1] % 5 == 1:
+        if self.episodes[-1] % 5 == 0 and self.episodes[-1] > 0:
             self.save_plots()
 
     def save_plot(self, title, xlabel, ylabel, values):
