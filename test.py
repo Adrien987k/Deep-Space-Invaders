@@ -23,7 +23,7 @@ def test(net, env, actions, parameters, image_processor, device):
 
             explore_probability = np.random.rand()
 
-            if (explore_probability > 0.2):
+            if (explore_probability > 0.1):
                 # Make a random action (exploration)
                 choice = random.randint(1, len(actions)) - 1
                 action = actions[choice]
