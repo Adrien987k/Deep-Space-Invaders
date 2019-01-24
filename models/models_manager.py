@@ -50,8 +50,6 @@ class ModelsManager():
         if parameters.get_saved_model:
             dq_net.load_state_dict(torch.load(
                 self.simple_dqn_save_path, map_location=device))
-            #target_net.load_state_dict(torch.load(self.ddqn_target_path, map_location = device))
-            print("GET SAVE")
             dq_net.eval()
 
-        return dq_net, None
+        return dq_net

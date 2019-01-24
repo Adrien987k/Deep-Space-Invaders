@@ -27,7 +27,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 dq_net, target_net = None, None
 
 if parameters.simple_dqn:
-    dq_net, _ = models_manager.load_DQN_model(parameters, device)
+    dq_net = models_manager.load_DQN_model(parameters, device)
 else:
     dq_net, target_net = models_manager.load_DDDQN_model(parameters, device)
 
