@@ -155,15 +155,15 @@ class Memory():
 
 class ImageProcessor:
 
-    def __init__(self, env, actions, parameters, per):
+    def __init__(self, env, actions, parameters):
 
         self.stack_size = parameters.stack_size
         self.frame_stack = None
 
-        if per:
-            self.memory = PERMemory(max_size=parameters.memory_size)
-        else:
+        if parameters.simple_dqn:
             self.memory = Memory(max_size=parameters.memory_size)
+        else:
+            self.memory = PERMemory(max_size=parameters.memory_size)
 
         for i in range(parameters.pretrain_length):
             # If it's the first step

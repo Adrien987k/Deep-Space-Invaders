@@ -34,12 +34,15 @@ class Parameters():
         # Fixed Q-target : update the parameter of our target_network every tau
         self.tau = 10
 
-        training, episode_render, get_saved_model = bool(int(
-            args[-3])), bool(int(args[-2])), bool(int(args[-1]))
+        training = bool(int(args[1]))
+        episode_render = bool(int(args[2]))
+        get_saved_model = bool(int(args[3]))
+        simple_dqn = bool(int(args[4]))
 
         # training = True
         # episode_render = False
         # get_saved_model = False
+        # simple_dqn = True
 
         # MODIFY THIS TO FALSE IF YOU JUST WANT TO SEE THE TRAINED AGENT
         self.training = training
@@ -49,3 +52,5 @@ class Parameters():
 
         # GET SAVED MODEL (FALSE FOR STARTING WITH NEW FRESH MODELS)
         self.get_saved_model = get_saved_model
+
+        self.simple_dqn = simple_dqn

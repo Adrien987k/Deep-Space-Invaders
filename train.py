@@ -51,7 +51,7 @@ def update_target_graph(model, target_net):
     target_net.load_state_dict(model.state_dict())
 
 
-def train(dq_net, target_net, env, parameters, image_processor, models_manager, actions, optimizer, device, fqt, dddqn, per, collab=False):
+def train(dq_net, target_net, env, parameters, image_processor, models_manager, actions, optimizer, device, collab=False):
 
     stats = statistics.Statistics()
 
@@ -83,10 +83,10 @@ def train(dq_net, target_net, env, parameters, image_processor, models_manager, 
                 print('EPISODE:', episode + 1, '/', parameters.total_episodes,
                       ' | STEP:', str(step), '/', str(parameters.max_steps), ' | LOSS:', loss)
 
-                if dddqn:
-                    models_manager.save_DDDQN_model(dq_net, target_net)
-                else:
+                if parameters.simple_dqn:
                     models_manager.save_DQN_model(dq_net, target_net)
+                else:
+                    models_manager.save_DDDQN_model(dq_net, target_net)
 
             step += 1
 
@@ -139,10 +139,10 @@ def train(dq_net, target_net, env, parameters, image_processor, models_manager, 
                 image_processor.memory.add(
                     (state.cpu().numpy(), action, reward, next_state.cpu().numpy(), done))
 
-                if dddqn:
-                    models_manager.save_DDDQN_model(dq_net, target_net)
-                else:
+                if parameters.simple_dqn:
                     models_manager.save_DQN_model(dq_net, target_net)
+                else:
+                    models_manager.save_DDDQN_model(dq_net, target_net)
 
             else:
                 # Stack the frame of the next_state
@@ -163,11 +163,11 @@ def train(dq_net, target_net, env, parameters, image_processor, models_manager, 
 
             tree_idx, batch, ISWeights_mb = None, None, None
 
-            if per:
+            if parameters.simple_dqn:
+                batch = image_processor.memory.sample(parameters.batch_size)
+            else:
                 tree_idx, batch, ISWeights_mb = image_processor.memory.sample(
                     parameters.batch_size)
-            else:
-                batch = image_processor.memory.sample(parameters.batch_size)
 
             states_mb = np.array([each[0] for each in batch], ndmin=3)
             actions_mb = np.array([each[1] for each in batch])
@@ -186,16 +186,31 @@ def train(dq_net, target_net, env, parameters, image_processor, models_manager, 
                 (64, 4, 110, 84)))
 
             Qs_target_next_state = None
-            if fqt:
+            if parameters.simple_dqn:
+                Qs_target_next_state = dq_net(next_states_mb.view(
+                    (64, 4, 110, 84)))
+            else:
                 # We use the fixed target (Q-fixed target) and try to get to it.
                 Qs_target_next_state = target_net(next_states_mb.view(
                     (64, 4, 110, 84)))
-            else:
-                Qs_target_next_state = dq_net(next_states_mb.view(
-                    (64, 4, 110, 84)))
 
             # Set Q_target = r if the episode ends at s+1, otherwise set Q_target = r + gamma*maxQ(s', a')
-            if dddqn:
+            if parameters.simple_dqn:
+                for i in range(0, len(batch)):
+                    terminal = dones_mb[i]
+
+                    # If we are in a terminal state, only equals reward
+                    if terminal:
+                        target_Qs_batch.append(
+                            torch.Tensor([rewards_mb[i]]).to(device))
+
+                    else:
+                        target = rewards_mb[i] + \
+                            parameters.gamma * \
+                            np.max(Qs_next_state[i].detach().cpu().numpy())
+                        target_Qs_batch.append(target)
+                
+            else:
                 for i in range(0, len(batch)):
                     terminal = dones_mb[i]
 
@@ -213,20 +228,6 @@ def train(dq_net, target_net, env, parameters, image_processor, models_manager, 
                             Qs_target_next_state[i].detach().cpu().numpy()[
                             action]
                         target_Qs_batch.append(target)
-            else:
-                for i in range(0, len(batch)):
-                    terminal = dones_mb[i]
-
-                    # If we are in a terminal state, only equals reward
-                    if terminal:
-                        target_Qs_batch.append(
-                            torch.Tensor([rewards_mb[i]]).to(device))
-
-                    else:
-                        target = rewards_mb[i] + \
-                            parameters.gamma * \
-                            np.max(Qs_next_state[i].detach().cpu().numpy())
-                        target_Qs_batch.append(target)
 
             targets_mb = torch.Tensor(
                 [each for each in target_Qs_batch]).to(device)
@@ -242,11 +243,11 @@ def train(dq_net, target_net, env, parameters, image_processor, models_manager, 
             # Sum(Qtarget - Q)^2
             # But the loss is modified because of PER
 
-            if per:
+            if parameters.simple_dqn:
+                loss = (torch.mul(targets_mb - Q, targets_mb - Q)).mean()
+            else:
                 loss = (torch.mul(torch.Tensor(ISWeights_mb).to(device),
                                   torch.mul(targets_mb - Q, targets_mb - Q))).mean()
-            else:
-                loss = (torch.mul(targets_mb - Q, targets_mb - Q)).mean()
 
             optimizer.zero_grad()
             loss.backward()
@@ -254,13 +255,11 @@ def train(dq_net, target_net, env, parameters, image_processor, models_manager, 
 
             # Update priority
 
-            if per:
+            if not parameters.simple_dqn:
                 absolute_errors = np.abs(targets_mb.detach().cpu().numpy(
                 ) - Q.detach().cpu().numpy())  # for updating Sumtree
                 image_processor.memory.batch_update(tree_idx, absolute_errors)
 
-            if tau > parameters.tau and fqt:
-                update_target_graph(dq_net, target_net)
-                tau = 0
-
-    return dq_net, target_net
+                if tau > parameters.tau:
+                    update_target_graph(dq_net, target_net)
+                    tau = 0
