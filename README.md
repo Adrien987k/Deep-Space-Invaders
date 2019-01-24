@@ -39,7 +39,7 @@ The parameters are booleans. 1 for True, 0 for False
 
 Example :
 ~~~
-python main.py 1 0 0
+python main.py 1 0 0 1
 ~~~
 
 Deep Reinforcement Learning for playing space invaders.
