@@ -26,14 +26,16 @@ python3 -m retro.import .
 
 Launch the code :
 ~~~
-python main.py training render get_saved_model
+python main.py training render get_saved_model simple_dqn
 ~~~
-The three parameters are booleans. 1 for True, 0 for False
+The parameters are booleans. 1 for True, 0 for False
 
 * training:         True for training False for directly test
 * render:           True for displying the environment while training
 * get_saved_model:  True for start train or test with a saved model (in models/saves)
                     False for starting with a new model
+* simple_dqn:       True for using the DQN algorithm. 
+                    False will use all the improvements we implemented (DDQN, Per Memory)
 
 Example :
 ~~~
