@@ -28,12 +28,17 @@ Launch the code :
 ~~~
 python main.py training render get_saved_model
 ~~~
-The three parameters are booleans 1 for True 0 for False
+The three parameters are booleans. 1 for True, 0 for False
 
-training:         True for training False for directly test
-render:           True for displying the environment while training
-get_saved_model:  True for start train or test with a saved model (in models/saves)
-                  False for starting with a new model
+* training:         True for training False for directly test
+* render:           True for displying the environment while training
+* get_saved_model:  True for start train or test with a saved model (in models/saves)
+                    False for starting with a new model
+
+Example :
+~~~
+python main.py 1 0 0
+~~~
 
 Deep Reinforcement Learning for playing space invaders.
 ------------ 
