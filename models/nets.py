@@ -3,9 +3,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# TODO Implements other models of the paper
-
-
 class SimpleDQNet(nn.Module):
 
     def __init__(self, stack_size, nb_actions):
@@ -59,7 +56,6 @@ class SimpleDQNet(nn.Module):
         return x
 
 # Duelling double DQ-net
-
 
 class DDDQNet(nn.Module):
 

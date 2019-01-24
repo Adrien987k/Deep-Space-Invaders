@@ -183,7 +183,7 @@ def train(dq_net, target_net, env, parameters, image_processor, models_manager, 
 
             # Get Q values for next_state
             Qs_next_state = dq_net(next_states_mb.view(
-                (64, 4, 110, 84)))  # TODO Check its correct !
+                (64, 4, 110, 84)))
 
             Qs_target_next_state = None
             if fqt:

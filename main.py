@@ -41,10 +41,10 @@ else:
 dq_net = dq_net.to(device)
 target_net = dq_net.to(device)
 
-optimizer = optim.Adam(dq_net.parameters(), lr=parameters.learning_rate)
+optimizer = optim.SGD(dq_net.parameters(), lr=parameters.learning_rate)
 
 if parameters.training:
-    dq_net_trained, target_net_trained = train.train(
-        dq_net, target_net, env, parameters, image_processor, models_manager, actions, optimizer, device, fqt, dddqn, per)
+    train.train(dq_net, target_net, env, parameters, image_processor,
+                models_manager, actions, optimizer, device, fqt, dddqn, per)
 
 test.test(dq_net, env, actions, parameters, image_processor, device)
