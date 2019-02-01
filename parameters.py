@@ -8,7 +8,7 @@ class Parameters():
         self.state_size = [110, 84, 4]
         self.nb_states = 110 * 84 * 4
         self.nb_actions = env.action_space.n  # 8 possible actions
-        self.learning_rate = 0.00050          # Alpha (aka learning rate)
+        self.learning_rate = 0.00025          # Alpha (aka learning rate)
 
         # TRAINING HYPERPARAMETERS
         self.total_episodes = 500           # Total episodes for training
@@ -18,7 +18,7 @@ class Parameters():
         # Exploration parameters for epsilon greedy strategy
         self.explore_start = 1.0            # exploration probability at start
         self.explore_stop = 0.1             # minimum exploration probability
-        self.decay_rate = 0.000005          # exponential decay rate for exploration prob
+        self.decay_rate = 0.000003          # exponential decay rate for exploration prob
 
         # Q learning hyperparameters
         self.gamma = 0.9                    # Discounting rate
